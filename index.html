@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#1565C0" />
+  <title>DT –
+     Donation Tracker</title>
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Firebase SDK -->
+  <script type="module" src="firebase.js"></script>
+  <script type="module" src="app.js"></script>
+  <!-- Expose module functions to inline HTML onclick handlers -->
+  <script>
+    // These bridge module functions to global scope for onclick= attributes
+    const _bridge = ['doLogin','doLogout','doGuest','doRegister','showPanel',
+      'showPage','togglePw','submitDonation','toggleDrop','pickDate','pickAmt',
+      'pickMth','onNameInput','onNameKey','selectSuggestion','applyAllFilters',
+      'resetFilters','clearTag','changePassword','setTheme','deleteEntry',
+      'renderSettings'];
+    window.__bridgeReady = false;
+    document.addEventListener('DOMContentLoaded', () => {
+      // Functions will be ready after module loads
+    });
+  </script>
+</head>
+<body>
+
+  <!-- ══════════ LOGIN ══════════ -->
+  <div id="loginScreen">
+    <div class="login-card" id="panelLogin">
+      <div class="logo-wrap">
+        <div class="logo-ring"><span>DT</span></div>
+        <h1>Donation Tracker</h1>
+        <p>Sign in to your account</p>
+      </div>
+      <div class="lf">
+        <label>Username</label>
+        <input type="text" id="loginUser" placeholder="Enter username" autocomplete="username" />
+      </div>
+      <div class="lf">
+        <label>Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="loginPass" placeholder="Enter password" autocomplete="current-password" />
+          <button type="button" class="eye-btn" onclick="togglePw('loginPass',this)" tabindex="-1">
+            <svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg class="eye-shut" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+          </button>
+        </div>
+      </div>
+      <button class="btn-login" onclick="doLogin()">Sign In →</button>
+      <div class="login-err" id="loginError"></div>
+      <div class="auth-divider"><span>or</span></div>
+      <button class="btn-guest" onclick="doGuest()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2a7.2 7.2 0 01-6-3.22c.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08a7.2 7.2 0 01-6 3.22z"/></svg>
+        Continue as Guest
+      </button>
+      <p class="auth-switch">New here? <button class="auth-link" onclick="showPanel('register')">Create account</button></p>
+    </div>
+
+    <div class="login-card" id="panelRegister" style="display:none;">
+      <div class="logo-wrap">
+        <div class="logo-ring"><span>DT</span></div>
+        <h1>Create Account</h1>
+        <p>Register to track your donations</p>
+      </div>
+      <div class="lf"><label>Full Name</label><input type="text" id="regName" placeholder="Your full name" /></div>
+      <div class="lf"><label>Username</label><input type="text" id="regUser" placeholder="Choose a username" autocomplete="off" /></div>
+      <div class="lf">
+        <label>Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="regPass" placeholder="Choose a password" autocomplete="new-password" />
+          <button type="button" class="eye-btn" onclick="togglePw('regPass',this)" tabindex="-1">
+            <svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg class="eye-shut" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="lf">
+        <label>Confirm Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="regPass2" placeholder="Repeat password" autocomplete="new-password" />
+          <button type="button" class="eye-btn" onclick="togglePw('regPass2',this)" tabindex="-1">
+            <svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg class="eye-shut" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+          </button>
+        </div>
+      </div>
+      <button class="btn-login" onclick="doRegister()">Create Account →</button>
+      <div class="login-err" id="regError"></div>
+      <div class="login-ok"  id="regOk"></div>
+      <p class="auth-switch">Already have an account? <button class="auth-link" onclick="showPanel('login')">Sign in</button></p>
+    </div>
+  </div>
+
+  <!-- ══════════ APP SHELL ══════════ -->
+  <div id="appShell">
+
+    <!-- Top Nav -->
+    <nav class="topnav">
+      <div class="nav-brand">
+        <div class="brand-badge">DT</div>
+        <div><div class="bname">DT</div><div class="bsub">Donation Tracker</div></div>
+      </div>
+      <div class="nav-links">
+        <button id="nav-home" class="active" onclick="showPage('home')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Home
+        </button>
+        <button id="nav-add" onclick="showPage('add')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>Add
+        </button>
+        <button id="nav-analysis" onclick="showPage('analysis')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2zm-7 14H7v-2h5v2zm5-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>Analysis
+        </button>
+        <button id="nav-settings" onclick="showPage('settings')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.49.49 0 00-.59-.22l-2.39.96a6.99 6.99 0 00-1.62-.94l-.36-2.54a.484.484 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.47.47 0 00-.59.22L2.74 8.87a.485.485 0 00.12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.485.485 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.37 1.04.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.57 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.03-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>Settings
+        </button>
+      </div>
+      <button class="btn-logout" onclick="doLogout()">Logout</button>
+    </nav>
+
+    <!-- Guest banner -->
+    <div class="guest-banner" id="guestBanner">
+      You are in <b>Guest Mode</b> — data will clear when you logout.
+      <button onclick="showPanel('register'); doLogout();">Register now</button>
+    </div>
+
+    <!-- Page Content -->
+    <div class="page-content">
+
+      <!-- ── HOME ── -->
+      <div class="page active" id="page-home">
+        <div class="pg-hero">
+          <div>
+            <h2>Today's Donations</h2>
+            <p>Live snapshot of today's giving</p>
+            <span class="today-badge" id="todayBadge" style="margin-top:10px;display:inline-block;"></span>
+          </div>
+          <div class="hero-icon">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="rgba(255,255,255,0.9)"><path d="M20 6h-2.18c.07-.44.18-.88.18-1.36C18 2.53 15.63 0 12.5 0c-1.74 0-3.41.81-4.5 2.09C6.91.81 5.24 0 3.5 0 .37 0-2 2.53-2 4.64c0 .48.11.92.18 1.36H-2c-1.1 0-2 .9-2 2v2c0 1.1.9 2 2 2h9v9c0 .55.45 1 1 1s1-.45 1-1v-9h9c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2z"/></svg>
+          </div>
+        </div>
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="7" r="4" fill="#1565C0" opacity=".9"/><circle cx="17" cy="9" r="3" fill="#42A5F5" opacity=".7"/><path d="M1 21c0-4 3.6-7 8-7s8 3 8 7" stroke="#1565C0" stroke-width="2" fill="none"/><path d="M17 13c2.2.5 4 2.5 4 5" stroke="#42A5F5" stroke-width="2" fill="none"/></svg></div>
+            <div class="stat-value" id="sCount">0</div>
+            <div class="stat-label">Donors</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#E3F2FD"/><circle cx="12" cy="12" r="10" stroke="#1565C0" stroke-width="1.5" fill="none"/><text x="7" y="16" font-size="9" font-weight="900" fill="#1565C0">₹</text></svg></div>
+            <div class="stat-value" id="sTotal">₹0</div>
+            <div class="stat-label">Total Amount</div>
+          </div>
+        </div>
+        <div class="sec-label">Today's Entries</div>
+        <div class="donation-list" id="homeList"></div>
+      </div>
+
+      <!-- ── ADD ── -->
+      <div class="page" id="page-add">
+        <div class="pg-hero" style="margin-bottom:16px;">
+          <div><h2>Add Donation</h2><p>Record a new donation entry</p></div>
+          <div class="hero-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="rgba(255,255,255,0.9)"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></div>
+        </div>
+        <div class="add-card">
+          <form class="add-form" onsubmit="submitDonation(event)">
+            <div class="add-grid">
+              <div class="fg">
+                <label>Donor Name *</label>
+                <input id="fName" type="text" placeholder="Full name" required />
+              </div>
+              <div class="fg">
+                <label>Phone Number</label>
+                <input id="fPhone" type="tel" placeholder="e.g. 9876543210" />
+              </div>
+              <div class="fg">
+                <label>Amount (₹) *</label>
+                <input id="fAmount" type="number" placeholder="e.g. 500" min="1" required />
+              </div>
+              <div class="fg">
+                <label>Payment Method *</label>
+                <select id="fMethod" required>
+                  <option value="" disabled selected>Select method</option>
+                  <option>Ketto</option>
+                  <option>UPI</option>
+                  <option>Other</option>
+                </select>
+              </div>
+              <div class="fg">
+                <label>Date *</label>
+                <input id="fDate" type="date" required />
+              </div>
+              <div class="fg fg-full">
+                <label>Notes (optional)</label>
+                <textarea id="fNotes" placeholder="Any additional notes..."></textarea>
+              </div>
+            </div>
+            <button type="submit" class="btn-submit">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M17 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V7l-4-4zm-5 16a3 3 0 110-6 3 3 0 010 6zm3-10H5V5h10v4z"/></svg>
+              Save Donation
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- ── ANALYSIS ── -->
+      <div class="page" id="page-analysis">
+        <div class="pg-hero ana-hero">
+          <div style="flex:1">
+            <h2>Analysis</h2>
+            <p>Filter &amp; explore all donations</p>
+            <div class="ana-hero-stats">
+              <span class="ahs-item">
+                <span class="ahs-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="rgba(255,255,255,0.85)"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2zm-7 14H7v-2h5v2zm5-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg></span>
+                <div><div class="ahs-val" id="aTotalAll">0</div><div class="ahs-lbl">Total</div></div>
+              </span>
+              <span class="ahs-sep"></span>
+              <span class="ahs-item">
+                <span class="ahs-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="rgba(255,255,255,0.85)"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></span>
+                <div><div class="ahs-val" id="aCnt">0</div><div class="ahs-lbl">Filtered</div></div>
+              </span>
+              <span class="ahs-sep"></span>
+              <span class="ahs-item">
+                <span class="ahs-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="rgba(255,255,255,0.85)"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg></span>
+                <div><div class="ahs-val" id="aTotal">₹0</div><div class="ahs-lbl">Amount</div></div>
+              </span>
+            </div>
+          </div>
+          <div class="hero-icon"><svg width="34" height="34" viewBox="0 0 24 24" fill="rgba(255,255,255,0.9)"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2zm-7 14H7v-2h5v2zm5-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg></div>
+        </div>
+
+        <!-- Filter buttons -->
+        <div class="ftab-row" id="ftabRow">
+          <button class="ftab" id="ftab-date" onclick="toggleDrop(event,'date')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3h-1V1h-2v2H8V1H6v2H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>
+            Date <span class="ftab-arrow">▾</span>
+          </button>
+          <button class="ftab" id="ftab-name" onclick="toggleDrop(event,'name')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+            Donor <span class="ftab-arrow">▾</span>
+          </button>
+          <button class="ftab" id="ftab-amt" onclick="toggleDrop(event,'amt')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+            Amount <span class="ftab-arrow">▾</span>
+          </button>
+          <button class="ftab" id="ftab-mth" onclick="toggleDrop(event,'mth')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+            Method <span class="ftab-arrow">▾</span>
+          </button>
+        </div>
+
+        <!-- Dropdowns -->
+        <div class="fdrop" id="fdrop-date">
+          <div class="fdrop-title"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3h-1V1h-2v2H8V1H6v2H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg> Date Range</div>
+          <div class="chips" id="dateChips">
+            <div class="chip on" data-d="all"    onclick="pickDate(this)">All Time</div>
+            <div class="chip"    data-d="7days"  onclick="pickDate(this)">Last 7 Days</div>
+            <div class="chip"    data-d="month"  onclick="pickDate(this)">Last Month</div>
+            <div class="chip"    data-d="custom" onclick="pickDate(this)">Custom</div>
+          </div>
+          <div class="custom-cal" id="customCal">
+            <div class="cal-row">
+              <div class="cal-field"><label>From</label><input type="date" id="calFrom" class="cal-input" /></div>
+              <div class="cal-field"><label>To</label><input type="date" id="calTo" class="cal-input" /></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="fdrop" id="fdrop-name">
+          <div class="fdrop-title"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg> Donor / Phone</div>
+          <div class="suggest-wrap">
+            <input id="flName" type="text" placeholder="Search name or phone..."
+              autocomplete="off" oninput="onNameInput()" onkeydown="onNameKey(event)" />
+            <div class="suggest-list" id="suggestList"></div>
+          </div>
+        </div>
+
+        <div class="fdrop" id="fdrop-amt">
+          <div class="fdrop-title"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg> Amount Range</div>
+          <div class="chips" id="amtChips">
+            <div class="chip on"  data-r="all"           onclick="pickAmt(this)">All</div>
+            <div class="chip"     data-r="0-999"         onclick="pickAmt(this)">₹0–₹999</div>
+            <div class="chip"     data-r="1000-4999"     onclick="pickAmt(this)">₹1K–₹4,999</div>
+            <div class="chip"     data-r="5000-9999"     onclick="pickAmt(this)">₹5K–₹9,999</div>
+            <div class="chip"     data-r="10000-20000"   onclick="pickAmt(this)">₹10K–₹20K</div>
+            <div class="chip"     data-r="20001-9999999" onclick="pickAmt(this)">Above ₹20K</div>
+          </div>
+        </div>
+
+        <div class="fdrop" id="fdrop-mth">
+          <div class="fdrop-title"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg> Payment Method</div>
+          <div class="chips" id="mthChips">
+            <div class="chip on" data-m="all"   onclick="pickMth(this)">All</div>
+            <div class="chip"    data-m="Ketto" onclick="pickMth(this)">Ketto</div>
+            <div class="chip"    data-m="UPI"   onclick="pickMth(this)">UPI</div>
+            <div class="chip"    data-m="Other" onclick="pickMth(this)">Other</div>
+          </div>
+        </div>
+
+        <!-- Apply + Reset -->
+        <div class="ana-action-row">
+          <button class="ana-reset" onclick="resetFilters()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
+            Reset
+          </button>
+          <button class="ana-apply" onclick="applyAllFilters()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+            Apply
+          </button>
+        </div>
+
+        <!-- Active tags -->
+        <div class="active-tags" id="activeTags"></div>
+        <div class="donation-list" id="anaList"></div>
+      </div>
+
+      <!-- ── SETTINGS ── -->
+      <div class="page" id="page-settings">
+        <div class="pg-hero" style="margin-bottom:16px;">
+          <div><h2>Settings</h2><p>Manage your account &amp; preferences</p></div>
+          <div class="hero-icon"><svg width="34" height="34" viewBox="0 0 24 24" fill="rgba(255,255,255,0.9)"><path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.49.49 0 00-.59-.22l-2.39.96a6.99 6.99 0 00-1.62-.94l-.36-2.54a.484.484 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.47.47 0 00-.59.22L2.74 8.87a.485.485 0 00.12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.485.485 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.37 1.04.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.57 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.03-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></div>
+        </div>
+
+        <!-- Profile card -->
+        <div class="set-section">
+          <div class="set-profile-card">
+            <div class="spc-avatar" id="spcAvatar">AD</div>
+            <div>
+              <div class="spc-name" id="spcName">Admin</div>
+              <div class="spc-user" id="spcUser">@admin</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Change Password -->
+        <div class="set-section" id="cpSection">
+          <div class="set-section-title">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+            Change Password
+          </div>
+          <div class="set-card">
+            <div class="lf"><label>Current Password</label>
+              <div class="pw-wrap"><input type="password" id="cpOld" placeholder="Current password" />
+                <button type="button" class="eye-btn" onclick="togglePw('cpOld',this)" tabindex="-1">
+                  <svg class="eye-open" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <svg class="eye-shut" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="lf"><label>New Password</label>
+              <div class="pw-wrap"><input type="password" id="cpNew" placeholder="New password" />
+                <button type="button" class="eye-btn" onclick="togglePw('cpNew',this)" tabindex="-1">
+                  <svg class="eye-open" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <svg class="eye-shut" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="login-err" id="cpErr" style="margin-bottom:8px;"></div>
+            <div class="login-ok"  id="cpOk"  style="margin-bottom:8px;"></div>
+            <button class="btn-submit" style="padding:11px;" onclick="changePassword()">Update Password</button>
+          </div>
+        </div>
+
+        <!-- Theme -->
+        <div class="set-section">
+          <div class="set-section-title">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3a9 9 0 100 18A9 9 0 0012 3zm0 16a7 7 0 110-14 7 7 0 010 14z"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+            Theme
+          </div>
+          <div class="set-card theme-row">
+            <button class="theme-btn active" id="theme-light" onclick="setTheme('light')">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 7a5 5 0 100 10A5 5 0 0012 7zM12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+              Light
+            </button>
+            <button class="theme-btn" id="theme-dark" onclick="setTheme('dark')">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+              Dark
+            </button>
+          </div>
+        </div>
+
+        <!-- Manage Donations -->
+        <div class="set-section">
+          <div class="set-section-title">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2zm-7 14H7v-2h5v2zm5-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+            Manage Donations
+          </div>
+          <div class="manage-list" id="manageList"></div>
+        </div>
+      </div>
+
+    </div><!-- /page-content -->
+
+    <!-- Bottom Nav — slim icon-only bar -->
+    <nav class="bottomnav">
+      <button class="bn-item active" id="bn-home" onclick="showPage('home')">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      </button>
+      <button class="bn-item" id="bn-analysis" onclick="showPage('analysis')">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2zm-7 14H7v-2h5v2zm5-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+      </button>
+      <button class="bn-item" id="bn-settings" onclick="showPage('settings')">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.49.49 0 00-.59-.22l-2.39.96a6.99 6.99 0 00-1.62-.94l-.36-2.54a.484.484 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.47.47 0 00-.59.22L2.74 8.87a.485.485 0 00.12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.485.485 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.37 1.04.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.57 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.03-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+      </button>
+    </nav>
+
+    <!-- Floating Add Button -->
+    <button class="fab-add" id="fabAdd" onclick="showPage('add')" title="Add Donation">
+      <svg viewBox="0 0 24 24" fill="white" width="26" height="26"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+    </button>
+
+  </div><!-- /appShell -->
+
+  <div class="toast" id="toast"></div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
